@@ -1,0 +1,59 @@
+stages:
+  - build:golang
+  - build:aws-cli
+  - build:node
+
+variables:
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $AWS_DEFAULT_REGION
+
+build:golang:
+  stage: build:golang
+  image: golang:1.18.1
+  before_script:
+    - apt-get update -q && apt-get install -y zip
+  script:
+    - cd ./fs && go mod tidy && make build
+    - cd ../iam && go mod tidy && make build
+  cache:
+    untracked: true
+  artifacts:
+    paths:
+      - ./
+  only:
+    - master
+
+build:aws-cli:
+  stage: build:aws-cli
+  image: amazon/aws-cli
+  script:
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set region $AWS_DEFAULT_REGION
+  cache:
+    untracked: true
+  artifacts:
+    paths:
+      - ./
+  only:
+    - master
+  dependencies:
+    - build:golang
+
+build:node:
+  stage: build:node
+  image: node:16
+  script:
+    - npm install -g aws-cdk@1.171.0
+    - npm install
+    - cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
+  cache:
+    untracked: true
+  artifacts:
+    paths:
+      - ./
+  only:
+    - master
+  dependencies:
+    - build:aws-cli
