@@ -57,7 +57,7 @@ func HandleRequest(_ context.Context, req events.APIGatewayProxyRequest) (events
 	serverId := req.QueryStringParameters["server_id"]
 	content := req.QueryStringParameters["content"]
 	token := req.QueryStringParameters["token"]
-	urlToken := "86f0003119f33bd00754ab9a1e1c1dc3"
+	urlToken := ""
 
 	fmt.Println(msgId, taskId, taskType, faultTime, taskStatus, taskSummary, taskName, serverId, content, token, urlToken)
 
@@ -70,7 +70,7 @@ func HandleRequest(_ context.Context, req events.APIGatewayProxyRequest) (events
 
 	// 搞清楚 token的判斷後, 再填入
 	if md5Token == token {
-		subject := fmt.Sprintf("監控寶 - 系統監 - [%s]", msgId)
+		subject := fmt.Sprintf("監控 - 系統監控 - [%s]", msgId)
 		desc := fmt.Sprintf(content)
 		CCEmail = append(CCEmail, "develop@test.com")
 		email := "support@test.com"
